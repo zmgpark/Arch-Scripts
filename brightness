@@ -1,0 +1,35 @@
+#!/bin/bash
+
+file=/sys/class/backlight/acpi_video0/brightness
+number=$(cat /sys/class/backlight/acpi_video0/brightness)
+
+case $1 in
+    -A)
+        if [ ! $number -ge 90 ]; then
+            let number+=5
+            echo $number > $file
+        else
+            echo 95 > $file
+        fi
+        ;;
+    -D)
+        if [ ! $number -le 5 ]; then
+            let number-=5
+            echo $number > $file
+        else
+            echo 1 > $file
+        fi
+        ;;
+    -G)
+        cat $file
+        ;;
+    -M)
+        echo 95 > $file
+        ;;
+    -L)
+        echo 1 > $file
+        ;;
+    *)
+        echo ERROR ESCRIBA -A para aumentar, -D para reducir, -G para obtener valor actual, -M para aumentar al maximo
+        ;;
+esac

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+mount_d(){
+    [ ! -e /dev/mapper/cryptdisk ] && sudo cryptsetup luksOpen /dev/sda3 cryptdisk &> /dev/null && ( [ ! -d /media/daneel/cryptdisk ] && sudo mkdir -p /media/daneel/cryptdisk &> /dev/null; exit 0 ) && sudo mount /dev/mapper/cryptdisk /media/daneel/cryptdisk &> /dev/null && exit 0 || exit 2
+}
+
+dismount(){
+    [ -e /dev/mapper/cryptdisk ] && sudo umount /media/daneel/cryptdisk &> /dev/null && sudo cryptsetup close cryptdisk &> /dev/null && [ ! -e /dev/mapper/cryptdisk ] && sudo rm -rf /media/daneel/cryptdisk &> /dev/null && exit 0 || exit 1
+}
+
+
+case $1 in
+    -m)
+        [ ! -e /dev/mapper/cryptdisk ] && [ -d /media/daneel/cryptdisk ] && rm -rf /media/daneel/cryptdisk
+        mount_d
+        ;;
+    -d)
+        dismount
+        ;;
+    *)
+        echo error!
+        ;;
+esac

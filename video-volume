@@ -1,0 +1,30 @@
+#!/bin/bash
+
+playerctl --list-all | grep -Fq "mpv" || exit 1
+
+vol=$(playerctl --player=mpv volume | awk '{printf("%.2f\n", $1*100)}')
+vol=$(echo $vol | sed 's/\..*//g')
+
+case "$1" in
+    -i)
+        if [ $vol -le 145 ]; then
+            playerctl --player=mpv volume '0.05+'
+        fi
+        ;;
+    -d)
+        playerctl --player=mpv volume '0.05-'
+        ;;
+    *)
+        echo ERROR
+        ;;
+esac
+
+if [ $vol -ge 50 ]; then
+    dunstify -r 173 "VIDEO:" "🔊 $vol%"  
+elif [ $vol -gt 25 ]; then
+    dunstify -r 173 "VIDEO:" "🔉 $vol%"
+elif [ $vol -ge 5 ]; then
+    dunstify -r 173 "VIDEO:" "🔈 $vol%"
+else
+    dunstify -r 173 "VIDEO:" "🔇 $vol%"
+fi

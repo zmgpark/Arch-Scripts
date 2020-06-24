@@ -1,0 +1,26 @@
+#!/bin/bash
+
+COUNTRY1="US"
+COUNTRY2="CL"
+COUNTRY3="BR"
+
+hash rankmirrors &> /dev/null; [ $? -ne 0 ] && echo "Please install pacman-contrib (rankmirrors)" && exit 1
+hash curl &> /dev/null; [ $? -ne 0 ] && echo "Please install curl" && exit 1
+
+[ $EUID -ne 0 ] && echo Please run this with sudo or as root! && exit 2
+
+#This does not use protocol ipv6!
+if [ ! -f /tmp/mirrorlist ];then
+    curl "https://www.archlinux.org/mirrorlist/?country=$COUNTRY3&country=$COUNTRY2&country=$COUNTRY1&protocol=http&protocol=https&ip_version=4" -o /tmp/mirror1; check=$?
+    if [ $check -eq 0 ]; then
+        sed -i 's/^#Server/Server/g' /tmp/mirror1
+        echo Ranking mirrors... WAIT
+        rankmirrors -n 10 /tmp/mirror1 > /tmp/mirrorlist
+    else
+        echo "SE PRODUJO UN ERROR AL CONSEGUIR LOS MIRRORS" && exit 3
+    fi
+fi
+
+echo Copying mirror to /etc/pacman.d...
+cp /tmp/mirrorlist /etc/pacman.d/ &> /dev/null; check=$?
+[ $check -eq 0 ] && rm -f /tmp/mirror1 /tmp/mirrorlist && echo && echo "Copying DONE! You can now update your system!" && pacman -Syyuw --noconfirm && exit 0

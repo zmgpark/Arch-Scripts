@@ -1,0 +1,68 @@
+#!/bin/bash
+
+remotedir="/home/tempgisk/backup"
+user1="giskard"
+addr="192.168.1.195"
+
+bckparch () {
+    local localdir="$HOME/"
+    local remotedir1="$remotedir/Linux/"
+    [[ $localdir != */ ]] && [[ $remotedir1 != */ ]] && exit 1
+    local excfile="$HOME/exclude.txt"
+    # opciones a veces preferidas
+    # --delete --delete-excluded
+    rsync -avvzz --delete --delete-excluded --exclude-from=$excfile $localdir $user1@$addr:$remotedir1
+}
+
+bckpwin () {
+    local localdir="/home/mounts/disk2/"
+    local remotedir1="$remotedir/Windows/"
+    [[ $localdir != */ ]] && [[ $remotedir1 != */ ]] && exit 1
+    rsync -avvzz --delete $localdir $user1@$addr:$remotedir1
+}
+
+if [ $# -eq 0 ]; then
+    bckparch
+    #ssh -t alejandro@192.168.1.195 'sudo shutdown now'
+    #$HOME/.scripts/apagar
+elif [ $# -eq 1 ]; then
+    case $1 in
+        -s)
+            [ -d $HOME/.freenet/downloads ] || { echo "DEBES ABRIR LA CARPETA" && exit 2; }
+            bckparch
+            ssh -t alejandro@192.168.1.195 'sudo shutdown now'
+            $HOME/.scripts/apagar
+            ;;
+        -b)
+            [ -d $HOME/.freenet/downloads ] || { echo "DEBES ABRIR LA CARPETA" && exit 2; }
+            bckparch
+            ssh -t alejandro@192.168.1.195 'bckp'
+            $HOME/.scripts/apagar
+            ;;
+        -e)
+            echo "ERRORES DE PROGRAMA"
+            echo
+            echo "ERROR 1: El directorio no termina en /"
+            echo "ERROR 2: DEBES ABRIR LA CARPETA"
+            echo "ERROR 3: Ingresar opcion correcta"
+            echo "ERROR 4: Solo debes ingresar una opcion"
+            ;;
+        --help)
+            echo "bckp [opcion]"
+            echo "[]= opcional"
+            echo 
+            echo "-s opcion de apagado" 
+            echo "-e imprimir errores"
+            echo "--help imprimir uso"
+            ;;
+        *)
+            echo "ERROR: Ingresar opcion correcta"
+            exit 3
+            ;;
+    esac
+else
+    echo "ERROR: solo debes ingresar una opcion"
+    exit 4
+fi
+
+

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+playerctl --list-all | grep -Fq "cmus" || exit 1
+
+case "$1" in
+    -i)
+        playerctl --player=cmus volume 0.05+
+        ;;
+    -d)
+        playerctl --player=cmus volume 0.05-
+        ;;
+    *)
+        echo ERROR
+        ;;
+esac
+
+vol=$(playerctl --player=cmus volume | awk '{printf("%.2f\n", $1*100)}')
+vol=$(echo $vol | sed 's/\..*//g')
+
+if [ $vol -ge 50 ]; then
+    dunstify -r 172 "MUSIC:" "🔊 $vol%"  
+elif [ $vol -gt 25 ]; then
+    dunstify -r 172 "MUSIC:" "🔉 $vol%"
+elif [ $vol -ge 5 ]; then
+    dunstify -r 172 "MUSIC:" "🔈 $vol%"
+else
+    dunstify -r 172 "MUSIC:" "🔇 $vol%"
+fi

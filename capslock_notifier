@@ -1,0 +1,16 @@
+#!/bin/bash
+
+daemon="on"
+while [[ $daemon == "on" ]]; do
+    caps="$(xset q | grep Caps | sed 's/.*Caps Lock:\s*//' | awk '{print $1}')"
+    num="$(xset q | grep Caps | sed 's/.*Num Lock:\s*//' | awk '{print $1}')"
+    
+    if [[ $caps == "on" ]]; then
+        dunstify -r 501 -t 100 -u critical "CAPSLOCK ON"
+    fi
+    
+    if [[ $num == "on" ]]; then
+        dunstify -r 502 -t 100 -u critical "NUMLOCK ON"
+    fi
+    sleep .05
+done

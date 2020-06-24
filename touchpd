@@ -1,0 +1,5 @@
+#!/bin/bash
+
+xinput list-props "SynPS/2 Synaptics TouchPad" | grep -qE "Device Enabled.*1$" && xinput disable "SynPS/2 Synaptics TouchPad" || xinput enable "SynPS/2 Synaptics TouchPad"
+
+xinput list-props "SynPS/2 Synaptics TouchPad" | grep -qE "Device Enabled.*1$" && { dunstify -C 202; dunstify -r 201 "MousePad Activado"; } || { dunstify -C 201; dunstify -r 202 "MousePad Desactivado"; }

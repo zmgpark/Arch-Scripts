@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#En esta ejecucion del programa feh hay 3 opciones
+#activadas.
+#-x para una ventana sin bordes
+#-d para que aparesca el directorio y nombre del
+##archivo que estas viendo
+#-. para que la imagen este centrada y que encaje la
+##imagen completa en la ventana
+#-D {numero} esta opcion es para que se active el modo
+##slideshow y el numero son los segundos que se muestra
+##cada imagen. El signo menos al segundo pone en pausa
+##el slideshow al momento de abrir el programa.
+feh -d. -D -5 --start-at "$@"
+
+## Para comenzar desde un archivo y ver los demás
+## agregar la opcion "--start-at" y para que el
+## comando funcione, encerrar todo en comillas!!
+
+## EJEMPLO: "fehm --start-at" y darle check a 
+## Utilizar siempre este comando

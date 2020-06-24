@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[ $# -eq 0 ] && echo Faltan URLs && exit 1
+
+exist=0
+screen -list | grep -Fq "videoyt" && exist=1
+screens=($(screen -list | grep -F "videoyt" | sed 's/.*\.//g' | sed 's/\s.*//g')) 
+
+if [ $exist -eq 1 ]; then
+    new_num=0
+    for i in ${screens[@]}; do
+        num=$(echo "$i" | sed 's/.*t//')
+        if [ $num -gt $new_num ]; then
+            new_num=$num
+        fi
+    done
+    new_num=$(echo "$new_num + 1" | calc -p)
+    screen -S "videoyt$new_num" youtube-dl -f 'bestvideo[height<=1080]+bestaudio/best[height<=1080]' -o "$HOME/vids/%(title)s.%(ext)s" $@
+else
+    screen -S "videoyt1" youtube-dl -f 'bestvideo[height<=1080]+bestaudio/best[height<=1080]' -o "$HOME/vids/%(title)s.%(ext)s" $@
+fi

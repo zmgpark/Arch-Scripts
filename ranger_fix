@@ -1,0 +1,6 @@
+#!/bin/bash
+
+[ -d $HOME/.scripts ] && PATH="$PATH:$(du "$HOME/.scripts/" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
+[ -d $HOME/.scripts_test ] && PATH="$PATH:$(du "$HOME/.scripts_test/" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
+
+ranger

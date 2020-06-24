@@ -1,0 +1,8 @@
+#!/bin/bash
+
+seg=$(date "+%S" | sed 's/^0//g')
+min=$(date "+%M" | sed 's/^0//g')
+hour=$(date "+%H" | sed 's/^0//g')
+month=$(date "+%m" | sed 's/^0//g')
+date=$(date "+%d" | sed 's/^0//g')
+day=$(date "+%u" | sed 's/^0//g')

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+video_file="/home/daneel/.config/.video_status"
+
+case $1 in
+    -p)
+        echo 1 > $video_file
+        ;;
+    -s)
+        echo 0 > $video_file
+        ;;
+    -r)
+        rm -f $video_file
+        ;;
+    -t)
+        [ ! -f $video_file ] && echo 1 > $video_file && exit 0
+        num=$(cat $video_file)
+        [ $num -eq 0 ] && echo 1 > $video_file || echo 0 > $video_file
+        ;;
+    *)
+        ;;
+esac

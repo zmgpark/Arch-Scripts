@@ -1,0 +1,6 @@
+#!/bin/bash
+
+unset GTK_IM_MODULE
+unset QT_IM_MODULE
+unset XMODIFIERS
+passmenu -fn 'Noto Sans Mono'

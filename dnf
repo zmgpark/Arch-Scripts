@@ -1,0 +1,4 @@
+#!/bin/bash
+
+archiv=/home/daneel/.bashrc
+sed -i 's/^neofetch/#neofetch/' $archiv

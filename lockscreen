@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# If `imagemagick` is not installed, use a blank screen.
+#-f /tmp/locked.png ] && [ -f /usr/bin/convert ] && sleep 1 &&
+#scrot -m -z -q 100 /tmp/base.png && 
+#convert /tmp/base.png -blur 0x8 /tmp/locked.png && rm -rf /tmp/base.png &&
+#terminator -e "echo \"LISTO se creo la foto!!\" && sleep 20"
+    
+# Pause music (mocp, mpd and send the pause key to all mpv videos):
+pamixer -m >/dev/null 2>&1
+playerctl --all-players pause >/dev/null 2>&1
+i3-msg bar mode dock
+
+i3lock -e -f -c 000000 -i $1
+
+# In five seconds, turn off display unless key press in last 4 seconds.
+sleep 1 && xset dpms force off

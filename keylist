@@ -1,0 +1,10 @@
+#!/bin/bash
+
+curl 'http://192.168.1.195:8888/downloads/listKeys.txt' -o /tmp/keylist &> /dev/null
+DIR_KEYLIST=$HOME/.password-store/web/dark/freenet
+infofecha=`date "+%d-%m-%Y_%I:%M_%P"`
+[ ! -d $DIR_KEYLIST ] && mkdir -p $DIR_KEYLIST
+rm -rf $DIR_KEYLIST/keylist*
+gpg -o $DIR_KEYLIST/keylist_$infofecha.gpg -r alejandro.uribe.noel@gmail.com -e /tmp/keylist
+rm -rf /tmp/keylist
+echo Su lista ha sido actualizada, guardada y encriptada.

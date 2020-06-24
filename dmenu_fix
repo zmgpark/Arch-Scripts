@@ -1,0 +1,7 @@
+#!/bin/bash
+
+unset GTK_IM_MODULE
+unset QT_IM_MODULE
+unset XMODIFIERS
+PATH=$PATH:$HOME/.scripts:$HOME/.scripts_test
+dmenu_run -fn 'Noto Sans Mono'

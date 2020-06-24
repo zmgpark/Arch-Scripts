@@ -1,0 +1,16 @@
+#!/bin/bash
+
+case $1 in
+    -m)
+        sudo cryptmount -m
+        num=$?
+        ( ([ $num -eq 0 ] && notify-send "Particion montada") || ([ $num -eq 2 ] && notify-send -u critical "La particion ya estaba montada") ) || notify-send -u critical "No se pudo montar la particion"
+        ;;
+    -d)
+        sudo cryptmount -d
+        [ $? -eq 0 ] && notify-send "Particion desmontada" || notify-send -u critical "La particion ya estaba desmontada"
+        ;;
+    *)
+        echo ERROR!
+        ;;
+esac

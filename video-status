@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if ! playerctl --list-all | grep -Fq "mpv"; then
+    dunstify -r 290 -u critical "MPV NO ESTA ABIERTO"
+    i3-msg -q mode "default"
+    exit 1
+fi
+
+dunstify -C 171
+dunstify -C 289
+dunstify -C 290
+
+if playerctl --list-all | grep -Fq "mpv"; then
+
+    file="/home/daneel/.config/.video_status"
+    num=$(cat "$file")
+    while [ $num -eq 1 ]; do
+        num=$(cat "$file")
+        [ $num -eq 0 ] && { dunstify -C 80; dunstify -C 173; exit 0; }
+        # Tiempo de reproduccion
+        position=$(playerctl --player=mpv position | sed 's/\..*//g')
+        min=$(calc $position/60 | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g')
+        seg=$(calc $position%60 | sed 's/^\s*//g') 
+        if [ $seg -lt 10 ];then
+            seg=$(echo "0$seg")
+        fi
+        position="$min:$seg"
+        if [ $min -ge 60 ]; then
+            hora=$(calc $min/60 | sed 's/^\s*//g' | sed 's/^~//g' | sed 's/\..*//g')
+            min=$(calc $min%60 | sed 's/^\s*//g')
+            if [ $min -lt 10 ];then
+                min=$(echo "0$min")
+            fi
+            position="$hora:$min:$seg"
+        fi
+
+        video_length=$(playerctl --player=mpv metadata | grep -F "length" | sed 's/.*length//g' | sed 's/^\s*//g')
+        video_length=$(calc $video_length/1000000 | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g')
+        raw_seg=$(playerctl --player=mpv position | sed 's/\..*//g')
+        percentage=$(calc "$raw_seg / $video_length * 100" | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g') 
+        min_length=$(calc $video_length/60 | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g')
+        seg_length=$(calc $video_length%60 | sed 's/^\s*//g') 
+        if [ $seg_length -lt 10 ];then
+            seg_length=$(echo "0$seg_length")
+        fi
+        video_length="$min_length:$seg_length"
+        if [ $min_length -ge 60 ]; then
+            hora_length=$(calc $min_length/60 | sed 's/^\s*//g' | sed 's/^~//g' | sed 's/\..*//g')
+            min_length=$(calc $min_length%60 | sed 's/^\s*//g')
+            if [ $min_length -lt 10 ];then
+                min_length=$(echo "0$min_length")
+            fi
+            video_length="$hora_length:$min_length:$seg_length"
+        fi
+
+        video_title="$(playerctl --player=mpv metadata | grep -F "title" | sed 's/.*title//g' | sed 's/^\s*//g' | sed -r 's/\.mp4|\.mpg|\.mkv|\.avi|\.webm//g')"
+
+        status=$(playerctl --player=mpv status)
+        if [[ $status == "Playing" ]]; then
+            play="▶"
+        elif [[ $status == "Paused" ]]; then
+            play="⏸"
+        else
+            play="⏹"
+            video_title="[No video available]"
+            percentage=0
+        fi
+
+        message="$video_title\n$play       $position ($percentage%) | $video_length"
+        dunstify -r 80 "🎬 VIDEO:              " "$message"
+    done
+fi

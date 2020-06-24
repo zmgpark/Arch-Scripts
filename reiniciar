@@ -1,0 +1,5 @@
+#!/bin/bash
+
+redshift -P -O 6500
+$HOME/.scripts/mlight -S 100
+sudo shutdown -r now

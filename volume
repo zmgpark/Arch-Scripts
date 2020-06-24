@@ -1,0 +1,34 @@
+#!/bin/bash
+
+case "$1" in
+    -i|-d)
+        if [[ "$1" == "-i" ]]; then
+            pamixer -u
+        fi
+        pamixer "$1" 5
+        ;;
+    -t)
+        pamixer "$1"
+        ;;
+    *)
+        echo ERROR
+        ;;
+esac
+
+muted="$(pamixer --get-mute)"
+vol="$(pamixer --get-volume)"
+dunstify -C 172
+
+if [[ "$muted" == "false" ]]; then
+    if [ $vol -ge 50 ]; then
+        dunstify -r 171 "VOLUME:" "🔊 $vol%"  
+    elif [ $vol -gt 25 ]; then
+        dunstify -r 171 "VOLUME:" "🔉 $vol%"
+    elif [ $vol -ge 5 ]; then
+        dunstify -r 171 "VOLUME:" "🔈 $vol%"
+    else
+        dunstify -r 171 "VOLUME:" "🔇 $vol%"
+    fi
+else
+        dunstify -r 171 "VOLUME:" "🔇 $vol%"  
+fi

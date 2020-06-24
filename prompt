@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# ./prompt "Do you want to shutdown?" "shutdown -h now"`
+
+unset GTK_IM_MODULE
+unset QT_IM_MODULE
+unset XMODIFIERS
+[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray -fn 'Noto Sans Mono' )" = "Yes" ] && $2

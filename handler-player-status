@@ -1,0 +1,151 @@
+#!/bin/bash
+
+music_run="/home/daneel/.scripts/music_status_run"
+video_run="/home/daneel/.scripts/video_status_run"
+music_status="/home/daneel/.scripts/music-status"
+video_status="/home/daneel/.scripts/video-status"
+music_file="/home/daneel/.config/.music_status"
+video_file="/home/daneel/.config/.video_status"
+
+case $1 in
+    -m)
+        case $2 in
+            -p)
+                if ! playerctl --list-all | grep -Fq "cmus"; then
+                    dunstify -r 289 -u critical "CMUS NO ESTA ABIERTO"
+                    i3-msg -q mode "default"
+                    /home/daneel/.scripts/handler-player-status -m -s
+                    exit 1
+                fi
+                $music_run -p
+                $music_status &
+                ;;
+            -s)
+                $music_run -s
+                ;;
+            -t)
+                if ! playerctl --list-all | grep -Fq "cmus"; then
+                    dunstify -r 289 -u critical "CMUS NO ESTA ABIERTO"
+                    i3-msg -q mode "default"
+                    /home/daneel/.scripts/handler-player-status -m -s
+                    exit 1
+                fi
+                if [ ! -f $music_file ]; then
+                    echo 1 > $music_file
+                    $music_status &
+                    exit 0
+                fi
+                $music_run -t
+                num=$(cat $music_file)
+                if [ $num -eq 1 ]; then
+                    $music_status &
+                fi
+                ;;
+            -r)
+                $music_run -r
+                ;;
+            *)
+                echo ERROR
+                ;;
+        esac
+        ;;
+    -v)
+        case $2 in
+            -p)
+                if ! (playerctl --list-all | grep -Fq "mpv"); then
+                    dunstify -r 290 -u critical "MPV NO ESTA ABIERTO"
+                    i3-msg -q mode "default"
+                    exit 1
+                fi
+                $video_run -p
+                $video_status &
+                ;;
+            -s)
+                $video_run -s
+                ;;
+            -t)
+                if ! playerctl --list-all | grep -Fq "mpv"; then
+                    dunstify -r 290 -u critical "MPV NO ESTA ABIERTO"
+                    i3-msg -q mode "default"
+                    /home/daneel/.scripts/handler-player-status -v -s
+                    exit 1
+                fi
+                if [ ! -f $video_file ]; then
+                    echo 1 > $video_file
+                    $video_status &
+                    exit 0
+                fi
+                $video_run -t
+                num=$(cat $video_file)
+                if [ $num -eq 1 ]; then
+                    $video_status &
+                fi
+                ;;
+            -r)
+                $video_run -r
+                ;;
+            *)
+                echo ERROR
+                ;;
+        esac
+        ;;
+    -T)
+        if ! (playerctl --list-all | grep -Fq "cmus") && ! (playerctl --list-all | grep -Fq "mpv"); then
+            dunstify -r 290 -u critical "MPV NO ESTA ABIERTO"
+            dunstify -r 289 -u critical "CMUS NO ESTA ABIERTO"
+            /home/daneel/.scripts/handler-player-status -v -s
+            /home/daneel/.scripts/handler-player-status -m -s
+            i3-msg -q mode "default"
+        fi
+        if ! (playerctl --list-all | grep -Fq "cmus"); then
+            /home/daneel/.scripts/handler-player-status -m -s
+            if playerctl --list-all | grep -Fq "mpv"; then
+                /home/daneel/.scripts/handler-player-status -v -t
+            fi
+            exit 1
+        fi
+        if ! (playerctl --list-all | grep -Fq "mpv"); then
+            /home/daneel/.scripts/handler-player-status -v -s
+            if playerctl --list-all | grep -Fq "cmus"; then
+                /home/daneel/.scripts/handler-player-status -m -t
+            fi
+            exit 1
+        fi
+        if [ ! -f $music_file ] && [ ! -f $video_file ]; then
+            echo 1 > $music_file
+            echo 1 > $video_file
+            $music_status &
+            $video_status &
+        elif [ ! -f $music_file ]; then
+            num_t=$(cat $video_file)
+            if [ $num_t -eq 1 ]; then
+                echo 0 > $video_file; echo 0 > $music_file
+            else
+                echo 1 > $video_file; echo 1 > $music_file
+                $music_status &
+                $video_status &
+            fi
+        elif [ ! -f $music_file ]; then
+            num_t=$(cat $video_file)
+            if [ $num_t -eq 1 ];then
+                echo 0 > $video_file; echo 0 > $music_file
+            else
+                echo 1 > $video_file; echo 1 > $music_file
+                $music_status &
+                $video_status &
+            fi
+        else
+            num_t1=$(cat $video_file)
+            num_t2=$(cat $music_file)
+            if [ $num_t1 -eq $num_t2 ] && [ $num_t1 -eq 1 ]; then
+                echo 0 > $video_file; echo 0 > $music_file
+            elif [ $num_t1 -eq $num_t2 ] && [ $num_t1 -eq 0 ]; then
+                echo 1 > $video_file; echo 1 > $music_file
+                $music_status &
+                $video_status &
+            else
+                echo 0 > $video_file; echo 0 > $music_file
+            fi
+        fi
+        ;;
+esac

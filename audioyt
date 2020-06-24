@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[ $# -eq 0 ] && echo Faltan URLs && exit 1
+
+exist=0
+screen -list | grep -Fq "audioyt" && exist=1
+screens=($(screen -list | grep -F "audioyt" | sed 's/.*\.//g' | sed 's/\s.*//g')) 
+
+if [ $exist -eq 1 ]; then
+    new_num=0
+    for i in ${screens[@]}; do
+        num=$(echo "$i" | sed 's/.*t//')
+        if [ $num -gt $new_num ]; then
+            new_num=$num
+        fi
+    done
+    new_num=$(echo "$new_num + 1" | calc -p)
+    screen -S "audioyt$new_num" youtube-dl -x --audio-quality 0 --audio-format mp3 -o "$HOME/music/%(title)s.%(ext)s" "$@"
+else
+    screen -S "audioyt1" youtube-dl -x --audio-quality 0 --audio-format mp3 -o "$HOME/music/%(title)s.%(ext)s" "$@"
+fi

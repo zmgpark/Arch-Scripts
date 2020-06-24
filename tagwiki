@@ -1,0 +1,5 @@
+#!/bin/bash
+
+paths=($(< /home/daneel/.config/vimwiki/paths))
+find "${paths[$1]}" -mindepth 0 -name "*.html" -print0 | xargs -0 sed -i 's/class="tag"/hidden class="tag"/g'
+# cp -R $HOME/docs/linuxtips/Dark-Vimwiki-Template-master/wiki_html/* ${paths[$1]}

@@ -1,0 +1,54 @@
+#!/bin/bash
+
+hora=`date "+%H"`			#Para usar menos codigo; horas militares
+
+#hora=`date  "+%I"`			#Consigues la hora en 01-09 y 10-12
+#ampm=`date  "+%P"`			#Consigues am pm
+
+hora=`echo "$hora" | sed 's/^0//g'`	#Pone en string la hora y si hay un 0 al
+					#comienzo lo borra
+
+user="Alejandro"				#whoami bota el usuario logeado
+user=`echo $user | sed 's/^./\u&/'`	#string de usuario reemplaza la primera
+					#letra con mayusculas.
+
+greet1="Buenos días,"			#Estos son los mensajes
+greet2="Buenas tardes,"			#que segun la hora se dará
+greet3="Buenas noches,"
+
+#Configuracion de las horas consideradas como mañana, tarde, noche
+#VAMOS A USAR HORAS MILITARES EN VEZ DE AM PM para esta consideracion
+recordatorio=""
+if [ $# -gt 0 ]; then
+    recordatorio="\n\n\n\e[0;33m$1\e[0m"
+fi
+#NOCHE
+if (( ( $hora>=0 && $hora<=3 ) || ( $hora>=19 && $hora<=23 ) ))
+then
+	mensaje="$greet3 $user"
+#MAÑANA
+elif (( $hora>=4 && $hora<=11 ))
+then
+	mensaje="$greet1 $user"
+#TARDE
+else
+	mensaje="$greet2 $user"
+fi
+
+#para agregar al comienzo de la linea un #
+#:()s/^/#/g
+
+#Formato de date %A dia completo
+#%d 01-31 dia en numeros
+#%B mes completo
+#%d%m%Y dia mes en numeros y numero de año completo
+#%I%M%P hora 01-12, minutos y am-pm
+
+infofecha=`date "+(%A %d de %B) %d/%m/%Y %I:%M %P"`
+echo -e "\e[0;33m$infofecha\e[0m"
+
+#\e[35m{}\e[m0 formato para que despues del primero con el num
+#cambia el formate para el texto que sigue y termina con el 0m para
+#revertir a formato normal
+
+echo -e "\e[0;36m$mensaje. Bienvenido.\e[0m$recordatorio"		#El mensaje se reproduce aqui

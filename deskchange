@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# Archivos de configuracion
+confreds="/home/daneel/.config/.confredshift" #VALOR PARA REDSHIFT
+confwp="/home/daneel/.config/.wallpaper" #VALOR 0 o 1
+
+hora=$(date "+%H" | sed 's/^0//g')
+min=$(date "+%M" | sed 's/^0//g')
+
+# Rutas de imagenes wallpaper
+wplight="/home/daneel/pics/.wallpapers/island.jpg"
+wpdark="/home/daneel/pics/.wallpapers/darkmode.png"
+
+# Rutas de imagenes wallpaper con blur
+wplightlocked="/home/daneel/pics/.wallpapers/island-locked.png"
+wpdarklocked="/home/daneel/pics/.wallpapers/darkmode-locked.png"
+
+dia=6500
+noche=3000
+blue=9500
+
+# Verificar si existen los archivos de configuracion
+if [ -f $confwp ] && [ -f $confreds ]; then
+    # Extrae los numeros guardados en los archivos de configuracion
+    numwp=$(cat $confwp)
+    numreds=$(cat $confreds)
+
+    # En caso que el programa reciba 0, 1 o varias opciones de programa
+    case $# in
+        0)
+            # En caso de que no reciba ninguna opcion
+            # verificamos si el numero de configuracion
+            # del wallpaper es 0 o 1, 0 quiere decir
+            # que el siguiente cambio es darkmode y
+            # viceversa
+            if [ $numwp -eq 0 ]; then
+                # Se cambia el archivo de configuracion para
+                # la siguiente lectura
+                echo 1 > $confwp
+                feh --bg-fill $wplight
+            else
+                echo 0 > $confwp
+                feh --bg-fill $wpdark
+            fi
+            ;;
+        1)
+            case $1 in
+                -s)
+                    if ( [ $hora -ge 18 ] && [ $min -ge 30 ] ) || [ $hora -lt 6 ]; then
+                        /home/daneel/.scripts/deskchange -n
+                    else
+                        /home/daneel/.scripts/deskchange -d
+                    fi
+                    ;;
+                -d)
+                    # Si la opcion es -s o -d que se ejecute
+                    echo 1 > $confwp
+                    echo $dia > $confreds
+                    /home/daneel/.scripts/mlight -S 100
+                    redshift -x
+                    feh --bg-fill $wplight
+                    # -C cierra las notificaciones con esa
+                    # etiqueta
+                    dunstify -C 102
+                    dunstify -C 103
+                    dunstify -C 104
+                    # Aqui se lanza la notificacion
+                    dunstify -r 101 "Modo Normal"
+                    ;;
+                -n)
+                    echo 0 > $confwp
+                    echo $noche > $confreds
+                    /home/daneel/.scripts/mlight -S 5
+                    redshift -P -O $noche
+                    feh --bg-fill $wpdark
+                    dunstify -C 101
+                    dunstify -C 103
+                    dunstify -C 104
+                    dunstify -r 102 "Modo Noche"
+                    ;;
+                -b)
+                    echo $blue > $confreds
+                    /home/daneel/.scripts/mlight -S 100
+                    redshift -P -O $blue
+                    dunstify -C 101
+                    dunstify -C 102
+                    dunstify -C 104
+                    dunstify -r 103 "Modo Blue: Concentración"
+                    ;;
+                -i)
+                    # Para que no supere los numeros permitidos
+                    # en los archivos de configuracion y cree
+                    # problemas se implemento esta condicional
+                    # como solucion
+                    if [ $numreds -le 24800 ]; then
+                        num=$(( $numreds + 200 ))
+                        echo $num > $confreds
+                        redshift -P -O $num
+                    fi
+                    ;;
+                -u)
+                    if [ $numreds -ge 1200 ]; then
+                        num=$(( $numreds - 200 ))
+                        echo $num > $confreds
+                        redshift -P -O $num
+                    fi
+                    ;;
+                -l)
+                    # Esto es para hacer un lock de escritorio
+                    # como el numero indica el siguiente cambio
+                    # lo contrario significa el actual.
+                    if [ $numwp -eq 0 ]; then
+                        /home/daneel/.scripts/lockscreen $wpdarklocked
+                    else
+                        /home/daneel/.scripts/lockscreen $wplightlocked
+                    fi
+                    ;;
+                *)
+                    echo ERROR: opcion invalida
+                    ;;
+            esac
+            ;;
+        *)
+            echo ERROR: Solo se acepta 1 opcion!
+            ;;
+    esac
+else
+    # EN CASO DE QUE NO HAYA ALGUN ARCHIVO
+    # se revierte al default
+    if ( [ $hora -ge 18 ] && [ $min -ge 30 ] ) || [ $hora -lt 6 ]; then
+        echo 0 > $confwp
+        echo $noche > $confreds
+        /home/daneel/.scripts/mlight -S 5
+        redshift -P -O $noche
+        feh --bg-fill $wpdark
+        dunstify -C 101
+        dunstify -C 103
+        dunstify -C 104
+        dunstify -r 102 "Modo Noche"
+    else
+        echo 1 > $confwp
+        echo $dia > $confreds
+        /home/daneel/.scripts/mlight -S 100
+        redshift -x
+        feh --bg-fill $wplight
+        dunstify -C 102
+        dunstify -C 103
+        dunstify -C 104
+        dunstify -r 101 "Modo Normal"
+    fi
+
+    dunstify -C 101
+    dunstify -C 103
+    dunstify -C 104
+    dunstify -C 102
+fi

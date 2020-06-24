@@ -1,0 +1,19 @@
+#!/bin/bash
+
+urls=($@)
+file=$HOME/vids/view_later.wlist
+
+if [ -f $file ]; then
+    checkfile=($(sed 's/ytdl/https/g' $file | sed 's/&.*//g'))
+    for i in ${checkfile[@]}; do
+        for j in ${urls[@]}; do
+            if echo "$j" | grep -Fq "$i"; then
+                echo UNO O VARIOS DE LOS URLS QUE INGRESO COINCIDE
+                exit 1
+            fi
+        done
+    done
+fi
+
+for i in "${urls[@]}"; do echo "$i" >> $file; done
+sed -i 's/https/ytdl/g' $file

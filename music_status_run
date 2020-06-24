@@ -1,0 +1,22 @@
+#!/bin/bash
+
+music_file="/home/daneel/.config/.music_status"
+
+case $1 in
+    -p)
+        echo 1 > $music_file
+        ;;
+    -s)
+        echo 0 > $music_file
+        ;;
+    -r)
+        rm -f $music_file
+        ;;
+    -t)
+        [ ! -f $music_file ] && echo 1 > $music_file && exit 0
+        num=$(cat $music_file)
+        [ $num -eq 0 ] && echo 1 > $music_file || echo 0 > $music_file
+        ;;
+    *)
+        ;;
+esac

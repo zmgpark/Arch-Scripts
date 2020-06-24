@@ -1,0 +1,75 @@
+#!/bin/bash
+
+if ! playerctl --list-all | grep -Fq "cmus"; then
+    dunstify -r 289 -u critical "CMUS NO ESTA ABIERTO"
+    i3-msg -q mode "default"
+    exit 1
+fi
+
+dunstify -C 289
+dunstify -C 290
+dunstify -C 171
+
+if playerctl --list-all | grep -Fq "cmus"; then
+
+    file="/home/daneel/.config/.music_status"
+    num=$(cat "$file")
+    while [ $num -eq 1 ]; do
+        num=$(cat "$file")
+        [ $num -eq 0 ] && { dunstify -C 79; dunstify -C 172; exit 0; }
+        # Tiempo de reproduccion
+        position=$(playerctl --player=cmus position | sed 's/\..*//g')
+        min=$(calc $position/60 | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g')
+        seg=$(calc $position%60 | sed 's/^\s*//g') 
+        if [ $seg -lt 10 ];then
+            seg=$(echo "0$seg")
+        fi
+        position="$min:$seg"
+        if [ $min -ge 60 ]; then
+            hora=$(calc $min/60 | sed 's/^\s*//g' | sed 's/^~//g' | sed 's/\..*//g')
+            min=$(calc $min%60 | sed 's/^\s*//g')
+            if [ $min -lt 10 ];then
+                min=$(echo "0$min")
+            fi
+            position="$hora:$min:$seg"
+        fi
+
+        song_length=$(playerctl --player=cmus metadata | grep -F "length" | sed 's/.*length//g' | sed 's/^\s*//g')
+        song_length=$(calc $song_length/1000000 | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g')
+        raw_seg=$(playerctl --player=cmus position | sed 's/\..*//g')
+        percentage=$(calc "$raw_seg / $song_length * 100" | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g') 
+        min_length=$(calc $song_length/60 | sed 's/\..*//g' | sed 's/^\s*//g' | sed 's/^~//g')
+        seg_length=$(calc $song_length%60 | sed 's/^\s*//g') 
+        if [ $seg_length -lt 10 ];then
+            seg_length=$(echo "0$seg_length")
+        fi
+        song_length="$min_length:$seg_length"
+        if [ $min_length -ge 60 ]; then
+            hora_length=$(calc $min_length/60 | sed 's/^\s*//g' | sed 's/^~//g' | sed 's/\..*//g')
+            min_length=$(calc $min_length%60 | sed 's/^\s*//g')
+            if [ $min_length -lt 10 ];then
+                min_length=$(echo "0$min_length")
+            fi
+            song_length="$hora_length:$min_length:$seg_length"
+        fi
+
+        song_title="$(playerctl --player=cmus metadata | grep -F "title" | sed 's/.*title//g' | sed 's/^\s*//g')"
+
+        song_playlist="$(playerctl --player=cmus metadata | grep -F "genre" | sed 's/.*genre//g' | sed 's/^\s*//g')"
+
+        status=$(playerctl --player=cmus status)
+        if [[ $status == "Playing" ]]; then
+            play="▶"
+        elif [[ $status == "Paused" ]]; then
+            play="⏸"
+        else
+            play="⏹"
+            song_title="[No audio available]"
+            percentage=0
+        fi
+
+        message="playlist: $song_playlist\n$song_title\n$play       $position ($percentage%) | $song_length"
+        dunstify -r 79 "🎵 CMUS:              " "$message"
+        sleep .1
+    done
+fi

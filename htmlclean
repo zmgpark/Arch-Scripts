@@ -1,0 +1,4 @@
+#!/bin/bash
+
+paths=($(< /home/daneel/.config/vimwiki/paths))
+rm -rf "${paths[$1]}"

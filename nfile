@@ -1,0 +1,61 @@
+#!/bin/bash
+
+case $# in
+    0)
+        echo "ERROR: you didn't specified a file name"
+        echo -e "USO: nfile < file > < opcion [-b (bash) | -p (python) ] >\n     nfile -h (for help)"
+        exit 4
+        ;;
+    1)
+        case $1 in
+            -h)
+                echo -e "USO: nfile < file > < opcion [-b (bash) | -p (python) ] >\n     nfile -h (for help)"
+                ;;
+            *)
+                file="$1"
+                if ! [ -f "$file" ]; then
+                    touch "$file"
+                    echo " " > "$file"
+                else
+                    echo "ERROR: el archivo ya existe"
+                    echo -e "USO: nfile < file > < opcion [-b (bash) | -p (python) ] >\n     nfile -h (for help)"
+                    exit 1
+                fi
+                ;;
+        esac
+        ;;
+    2)
+        file=$2
+        if ! [ -f "$file" ]; then
+            case $1 in
+                -b)
+                    touch "$file"
+                    echo "#!/bin/bash" > "$file"
+                    ;;
+                -p)
+                    touch "$file"
+                    echo "#!/bin/python" > "$file"
+                    ;;
+                -c)
+                    touch "$file"
+                    echo "#!/bin/python" > "$file"
+                    echo "" >> "$file"
+                    echo "export DISPLAY=':0'" >> "$file"
+                    echo "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/1000/bus'" >> "$file"
+                    ;;
+                *)
+                    echo "ERROR: debe ofrecer una opcion correcta"
+                    exit 2
+                    ;;
+            esac
+            chmod +x "$file"
+        else
+            echo "ERROR: el archivo ya existe"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "ERROR: demasiados argumentos"
+        exit 3
+        ;;
+esac

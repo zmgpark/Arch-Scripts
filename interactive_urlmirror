@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Script created by zmgpark
+# If you improved my script please be kind to let me know at
+# zomgpark@outlook.com or my github if its possible
+#
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+[ $EUID -ne 0 ] && echo "Please run this script with sudo or as root" && exit 1
+
+hash rankmirrors
+[ $? -eq 1 ] && echo "PLEASE INSTALL THE PACKAGE: pacman-contrib" && exit 1
+
+if [ ! -f /tmp/mirrorlist ];then
+    COUNTRY=("AUSTRALIA" "AUSTRIA" "BANGLADESH" "BELARUS" "BELGIUM" "BOSNIA AND HERZEGOVINA" "BRAZIL" "BULGARIA" "CANADA" "CHILE" "CHINA" "COLOMBIA" "CROATIA" "CZECHIA" "DENMARK" "ECUADOR" "FINLAND" "FRANCE" "GEORGIA" "GERMANY" "GREECE" "HONG KONG" "HUNGARY" "ICELAND" "INDIA" "INDONESIA" "IRAN" "IRELAND" "ISRAEL" "ITALY" "JAPAN" "KAZAKHSTAN" "KENYA" "LATVIA" "LITHUANIA" "LUXEMBOURG" "MACEDONIA" "MEXICO" "NETHERLANDS" "NEW CALEDONIA" "NEW ZEALAND" "NORWAY" "PARAGUAY" "PHILIPPINES" "POLAND" "PORTUGAL" "ROMANIA" "RUSSIA" "SERBIA" "SINGAPORE" "SLOVAKIA" "SLOVENIA" "SOUTH AFRICA" "SOUTH KOREA" "SPAIN" "SWEDEN" "SWITZERLAND" "TAIWAN" "THAILAND" "TURKEY" "UKRAINE" "UNITED KINGDOM" "UNITED STATES" "VIETNAM")
+
+
+    COUNTRY_ABV=("AU" "AT" "BD" "BY" "BE" "BA" "BR" "BG" "CA" "CL" "CN" "CO" "HR" "CZ" "DK" "EC" "FI" "FR" "GE" "DE" "GR" "HK" "HU" "IS" "IN" "ID" "IR" "IE" "IL" "IT" "JP" "KZ" "KE" "LV" "LT" "LU" "MK" "MX" "NL" "NC" "NZ" "NO" "PY" "PH" "PL" "PT" "RO" "RU" "RS" "SG" "SK" "SI" "ZA" "KR" "ES" "SE" "CH" "TW" "TH" "TR" "UA" "UK" "US" "VN")
+
+
+    delimeter=${#COUNTRY[@]}
+    i=0
+    j=0
+    tab=""
+    clear
+    echo -e "\nLIST OF COUNTRIES:\n"
+    while [ $delimeter -gt 0 ]
+    do
+        if [ ${#COUNTRY[i]} -gt 20 ]; then
+            tab="\t"
+        elif [ ${#COUNTRY[i]} -gt 10 ]; then
+            tab="\t\t"
+        else
+            tab="\t\t\t"
+        fi
+        echo -ne "($(( $i + 1 ))) ${COUNTRY[i]}$tab"
+        let j++
+        let i++
+        [ $j -ge 4 ]&& echo && j=0
+        let delimeter--
+    done
+    echo
+    echo "(ENTER COUNTRY NUMBER)"
+    for ((i=0;i<3;i++))
+    do
+        state=1
+        while [ $state -eq 1 ]
+        do
+            [ $i -eq 0 ] && message="Choose your country or a country near you: "
+            [ $i -eq 1 ] && message="Choose a second country near you: "
+            [ $i -eq 2 ] && message="Choose a third country near you: "
+            read -p "$message" number_country
+            ([ ! $number_country -gt 0 ] || [ ! $number_country -le ${#COUNTRY[@]} ]) && echo "Please insert a number of a country." || state=0
+        done
+        numc[i]=$number_country
+    done
+    
+    #This does not use protocol ipv6!
+    curl "https://www.archlinux.org/mirrorlist/?country=${COUNTRY_ABV[$(( ${numc[2]} - 1 ))]}&country=${COUNTRY_ABV[$(( ${numc[1]} - 1 ))]}&country=${COUNTRY_ABV[$(( ${numc[0]} - 1 ))]}&protocol=http&protocol=https&ip_version=4" -o /tmp/mirror1
+    if [ $? -eq 0 ]; then
+        sed -i 's/^#Server/Server/g' /tmp/mirror1
+        echo Ranking mirrors... WAIT! This might take several minutes
+        rankmirrors -n 5 /tmp/mirror1 > /tmp/mirrorlist
+    fi
+fi
+
+echo Copying mirror to /etc/pacman.d...
+sudo cp /tmp/mirrorlist /etc/pacman.d/ &> /dev/null
+[ $? -eq 0 ] && rm -f /tmp/mirror1 /tmp/mirrorlist && echo && echo "Copying DONE! You can now update your system!" && exit 0 || echo "ERROR: Password Timeout" && exit 1
